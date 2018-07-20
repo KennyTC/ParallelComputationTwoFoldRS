@@ -10,9 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The class implements TwoFold Rough Approximations by Sequential Algorithm
- *
- * @author (your name)
- * @version (a version number or a date)
  */
 public class SequentialAlgorithm
 {
@@ -117,8 +114,6 @@ public class SequentialAlgorithm
         }
         catch(IOException ex) {
             System.out.println("Error reading file '" + fileName + "'");                  
-            // Or we could just do this: 
-            // ex.printStackTrace();
         }        
     }
 
@@ -127,7 +122,7 @@ public class SequentialAlgorithm
         tmp.addAll(setB);
         return tmp;
     }
-
+    // select attributes to aggregate. attr is a string of number, each is an attribute. E.g., 1,10,12,13,17 
     public static void selectAttributesToAggregate(String fileName,String attr){
 
         String fileResult = fileName.replaceFirst(".txt","_attrToAgg.txt"); 
@@ -158,16 +153,15 @@ public class SequentialAlgorithm
         }
         catch(IOException ex) {
             System.out.println("Error reading file '" + fileName + "'");                  
-            // Or we could just do this: 
-            // ex.printStackTrace();
         }        
     }
 
+    // aggregate attributes
     public static void aggregateAttr(String fileName){
 
         long startTime = System.nanoTime();
+        
         //load data
-        //List<List<Integer>> l1= new ArrayList<>(); List<List<Integer>> l5= new ArrayList<>(); List<List<Integer>> l7= new ArrayList<>();List<List<Integer>> l10= new ArrayList<>();
         List<List<Integer>> l12= new ArrayList<>(); List<List<Integer>> l13= new ArrayList<>(); List<List<Integer>> l17= new ArrayList<>();List<List<Integer>> l18= new ArrayList<>();
         List<List<Integer>> l25= new ArrayList<>(); List<List<Integer>> l27= new ArrayList<>(); List<List<Integer>> l34= new ArrayList<>();List<List<Integer>> l37= new ArrayList<>();
         List<List<Integer>> lResult= new ArrayList<>();
@@ -180,11 +174,7 @@ public class SequentialAlgorithm
             String line = null;
             int j=1;            
             while((line = bufferedReader.readLine()) != null) {                         
-                String[] v=line.toString().split("\t");
-                // if (Integer.parseInt(v[0])==1) l1= convertToListList(v[1]);
-                // if (Integer.parseInt(v[0])==5) l5= convertToListList(v[1]);
-                // if (Integer.parseInt(v[0])==7) l7= convertToListList(v[1]);
-                // if (Integer.parseInt(v[0])==10) l10= convertToListList(v[1]);
+                String[] v=line.toString().split("\t");                
                 if (Integer.parseInt(v[0])==12) l12= convertToListList(v[1]);
                 if (Integer.parseInt(v[0])==13) l13= convertToListList(v[1]);
                 if (Integer.parseInt(v[0])==17) l17= convertToListList(v[1]);
@@ -194,26 +184,22 @@ public class SequentialAlgorithm
                 if (Integer.parseInt(v[0])==34) l34= convertToListList(v[1]);
                 if (Integer.parseInt(v[0])==37) l37= convertToListList(v[1]);
             }
-            // System.out.println("l1 size:"+ l1.size());System.out.println("l5 size:"+ l5.size());System.out.println("l7 size:"+ l7.size()); System.out.println("l10 size:"+ l10.size());
+
             System.out.println("l12 size:"+ l12.size());
             System.out.println("l13 size:"+ l13.size());System.out.println("l17 size:"+ l17.size());System.out.println("l18 size:"+ l18.size());
             System.out.println("l25 size:"+ l25.size());System.out.println("l27 size:"+ l27.size());
             System.out.println("l34 size:"+ l34.size());System.out.println("l37 size:"+ l37.size());
             System.out.println("lResult size:"+ lResult.size());
             Joiner comma = Joiner.on(",").skipNulls(); 
-            // for(List<Integer> s1: l1){
-            // for(List<Integer> s10: l10){
+
             for(List<Integer> s12: l12){
                 for(List<Integer> s13: l13){
                     for(List<Integer> s25: l25){
                         for(List<Integer> s34: l34){
-                            // for(List<Integer> s5: l5){
-                            // for(List<Integer> s7: l7){
                             for(List<Integer> s17: l17){
                                 for(List<Integer> s18: l18){
                                     for(List<Integer> s27: l27){
                                         for(List<Integer> s37: l37){
-                                            // lTemp.add(s1);lTemp.add(s5);lTemp.add(s7);lTemp.add(s10);
                                             lTemp.add(s12);lTemp.add(s13);lTemp.add(s17);lTemp.add(s18);lTemp.add(s25);lTemp.add(s27);lTemp.add(s34);lTemp.add(s37);
                                             List<Integer> intersect=intersection(lTemp);
                                             lTemp.clear();
@@ -226,8 +212,6 @@ public class SequentialAlgorithm
                                         }
                                     }
                                 }
-                                // }
-                                // }
                             }
                         }
                     }
@@ -262,11 +246,10 @@ public class SequentialAlgorithm
         }
         catch(IOException ex) {
             System.out.println("Error reading file '" + fileName + "'");                  
-            // Or we could just do this: 
-            // ex.printStackTrace();
+      
         }        
     }
-
+    // convert a string to List<List<Integer>>
     public static List<List<Integer>> convertToListList(String v) {
 
         String[] vStr= v.trim().split("\\|");       
@@ -282,23 +265,7 @@ public class SequentialAlgorithm
         }   
         return tmp;
     }
-
-    public static List<Integer> intersection(List<Integer> arr1, List<Integer> arr10,List<Integer> arr12,List<Integer> arr13,List<Integer> arr25,List<Integer> arr34){
-        // Set<Integer> tmp1 = new HashSet<Integer>(arr1);
-        // tmp1.retainAll(new HashSet<Integer>(arr10));
-        // tmp1.retainAll(new HashSet<Integer>(arr12));
-        // tmp1.retainAll(new HashSet<Integer>(arr13));
-        // tmp1.retainAll(new HashSet<Integer>(arr25));
-        // tmp1.retainAll(new HashSet<Integer>(arr34));
-        List<Integer> tmp = new ArrayList<Integer>();
-        tmp = pairIntersection(arr1, arr10);
-        tmp = pairIntersection(tmp,arr12);
-        tmp = pairIntersection(tmp,arr13);
-        tmp = pairIntersection(tmp,arr25);
-        tmp = pairIntersection(tmp,arr34);
-        return tmp;        
-    }
-
+    // find intersection between elements of List<List<Integer>>
     public static List<Integer> intersection(List<List<Integer>> arr){
 
         List<Integer> tmp = pairIntersection(arr.get(0),arr.get(1));        
@@ -330,7 +297,7 @@ public class SequentialAlgorithm
         }
         return tmp;
     }
-
+    // check arr1 to see if it is arr2. Return true if arr1 is in arr2.
     static Boolean exists(List<Integer> arr1, List<List<Integer>> arr2)
     {
         Boolean exist=false;
@@ -342,7 +309,7 @@ public class SequentialAlgorithm
         }
         return exist;
     }
-
+    // find rough approximations
     public static void roughApproximation(String ecFileName, String pecFileName, String fileName) throws IOException {
         long startTime = System.nanoTime();
         //load data
@@ -482,8 +449,7 @@ public class SequentialAlgorithm
         }
         catch(IOException ex) {
             System.out.println("Error reading file '" + fileName + "'");                  
-            // Or we could just do this: 
-            // ex.printStackTrace();
+       
         }     
     }
 
@@ -520,6 +486,7 @@ public class SequentialAlgorithm
         return tmp;
     } 
 
+    // used to check result of AP step
     public static List<List<Integer>> readAggregatedFile(String fileName)throws IOException{
         List<List<Integer>> temp = new ArrayList<List<Integer>>();
 

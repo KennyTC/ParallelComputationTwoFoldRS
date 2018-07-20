@@ -32,16 +32,13 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hadoop.conf.Configured;
 /**
- * Thuc hien Map vs Reduce dong thoi. Map khong dung Combiner ma dung cleanup
- *
- * @author (your name)
- * @version (a version number or a date)
+ * Aggregate certain and possible equivalence classes in parallel
  */
-public class APP3 extends Configured implements Tool 
+public class APP extends Configured implements Tool 
 {
     public static void main(String [] args) throws Exception
     {
-        int exitCode = ToolRunner.run(new APP3(), args);
+        int exitCode = ToolRunner.run(new APP(), args);
         System.exit(exitCode);
         
     }
@@ -51,19 +48,15 @@ public class APP3 extends Configured implements Tool
         
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, args[2]);
-        job.setJarByClass(APP3.class);
-        job.setMapperClass(MapAPP3.class);
-        job.setPartitionerClass(PartitionerAPP3.class);
-        job.setReducerClass(ReduceAPP3.class);
+        job.setJarByClass(APP.class);
+        job.setMapperClass(MapAPP.class);
+        job.setPartitionerClass(PartitionerAPP.class);
+        job.setReducerClass(ReduceAPP.class);
         job.setNumReduceTasks(Integer.parseInt(args[3]));
 
         // job input
-        job.setInputFormatClass(SequenceFileInputFormat.class);        //job.setInputFormatClass(SequenceFileAsTextInputFormat.class);
-        //job.setInputFormatClass(NLineInputFormat.class);
-        //NLineInputFormat.addInputPath(job, new Path(args[0]));
-        //job.getConfiguration().setInt("mapreduce.input.lineinputformat.linespermap", 2);
-        //job.setInputFormatClass(KeyValueTextInputFormat.class);
-
+        job.setInputFormatClass(SequenceFileInputFormat.class);       
+        
         // map output, compressed using Snappy
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(Text.class);
@@ -81,14 +74,13 @@ public class APP3 extends Configured implements Tool
         FileInputFormat.setInputPaths(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
-        //Wait for the job to complete and print if the job was successful or not
         int status = job.waitForCompletion(true) ? 0:1;
         long stopTime = System.nanoTime();
         System.out.println("Time" + TimeUnit.NANOSECONDS.toSeconds(startTime - stopTime));
         return status;
     }
-
-    public static class PartitionerAPP3 extends Partitioner<Text,Text>{    
+    // partitioner
+    public static class PartitionerAPP extends Partitioner<Text,Text>{    
 
         public int getPartition(Text key, Text value, int numReduceTasks)
         {
@@ -125,7 +117,7 @@ public class APP3 extends Configured implements Tool
             return ret;
         }
     }
-    public static class MapAPP3 extends Mapper<Text, Text, Text, Text>{     
+    public static class MapAPP extends Mapper<Text, Text, Text, Text>{     
         public static int k=0;
 
         public List<List<Integer>> c_pre;
@@ -201,7 +193,7 @@ public class APP3 extends Configured implements Tool
             c_result.clear();
             System.out.println("Map finished");
         }
-
+        // convert a string to a List<List<Integer>>
         public static List<List<Integer>> convertToListList(String v) {
 
             String[] vStr= v.trim().split("\\|");       
@@ -217,7 +209,7 @@ public class APP3 extends Configured implements Tool
             }   
             return tmp;
         }
-
+        // find intersection between two List<Integer>
         public static List<Integer> intersection(List<Integer> arr1, List<Integer> arr2)
         {
             List<Integer> tmp = new ArrayList<Integer>();
@@ -239,7 +231,7 @@ public class APP3 extends Configured implements Tool
             }
             return tmp;
         }
-
+        // check arr1 to see if it is arr2. Return true if arr1 is in arr2.
         static Boolean exists(List<Integer> arr1, List<List<Integer>> arr2)
         {
             Boolean exist=false;
@@ -252,7 +244,7 @@ public class APP3 extends Configured implements Tool
             return exist;
         }
     } 
-    public static class ReduceAPP3 extends Reducer<Text, Text, Text, Text> {
+    public static class ReduceAPP extends Reducer<Text, Text, Text, Text> {
 
         public void reduce(Text key, Iterable<Text> values, Context con) throws IOException, InterruptedException
         {
@@ -321,7 +313,7 @@ public class APP3 extends Configured implements Tool
                 }
             }
         }
-
+        
         static Boolean exists(List<Integer> arr1, List<List<Integer>> arr2)
         {
             Boolean exist=false;

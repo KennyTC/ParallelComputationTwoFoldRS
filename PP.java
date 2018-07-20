@@ -24,7 +24,10 @@ import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.util.GenericOptionsParser;
-
+/**
+ * Calculate certain and possible equivalence classes of an attributes in parallel
+ *
+ */
 public class PP
 {
     public static void main(String [] args) throws Exception
@@ -107,10 +110,6 @@ public class PP
             Joiner pipe = Joiner.on("|").skipNulls(); 
             String s_cer = pipe.join(c_cer);
             String s_poss = pipe.join(c_poss);
-            // we output c_cer and c_poss seperately. To output c_poss
-            // con.write(key, new Text(s_poss));
-            // To output c_cer we use:
-            // con.write(key, new Text(s_cer));
             con.write(key,new Text(s_cer+"\t"+s_poss));
         }
 
@@ -119,7 +118,7 @@ public class PP
             tmp.addAll(setB);
             return tmp;
         }
-
+        // convert string to a set of integer
         public static HashSet<Integer> convertToIntegerSet(String v) {
 
             HashSet<Integer> tmp = new HashSet<Integer>();
@@ -129,7 +128,7 @@ public class PP
                 for (String s: vStr){            
                     tmp.add(Integer.parseInt(s));                                
                 }  
-            }else { //v[1] la 1 so, vd 2
+            }else { //v[1] la one number
                 tmp.add(Integer.parseInt(v));
             }             
             return tmp;

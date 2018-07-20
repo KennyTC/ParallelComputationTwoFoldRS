@@ -22,6 +22,9 @@ import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.commons.io.FileUtils;
 
+/**
+ * Utils class to handle SequenceFiles
+ */
 public class SequenceFilesUtils {
 
     public static void main(String[] args) throws IOException {
@@ -29,19 +32,19 @@ public class SequenceFilesUtils {
         String select = args[2];
         switch(select){
             case "long":
-            longwritable(new Path(args[0]), new Path(args[1]),Integer.parseInt(args[3]));        
+            longwritable(new Path(args[0]), new Path(args[1]),Integer.parseInt(args[3])); //convert a SequenceFile with Key=LongWritable to a new SequenceFile with different blocksizek       
             break;
             case "text":
-            textwritable(new Path(args[0]),new Path(args[1]),Integer.parseInt(args[3]));
+            textwritable(new Path(args[0]),new Path(args[1]),Integer.parseInt(args[3])); //convert a SequenceFile with Key=Text to a new SequenceFile with different blocksize  
             break;
             case "convertattributetosequence":
-            convertAttributesToSequenceFile(args[0],new Path(args[1]),Integer.parseInt(args[3]));
+            convertAttributesToSequenceFile(args[0],new Path(args[1]),Integer.parseInt(args[3])); //convert a text file to SequenceFile  
             break;
             case "removedupAP":
-            removeDuplicateAPPResult(new Path(args[0]),new Path(args[1]));
+            removeDuplicateAPPResult(new Path(args[0]),new Path(args[1]));//remove duplicate result in APP step  
             break;
             case "selectattribute":
-            selectAttributesToAggregate(new Path(args[0]),new Path(args[1]),Integer.parseInt(args[3]),args[4]);
+            selectAttributesToAggregate(new Path(args[0]),new Path(args[1]),Integer.parseInt(args[3]),args[4]); //extract some attributes from a SequenceFile, create a new SequenceFile and upload to hdfs  
             break;
         }
     }
@@ -150,7 +153,7 @@ public class SequenceFilesUtils {
         }       
 
     }
-    // output attributes to aggregates, used before AP. attr is attributes, divided by comma, eg 1,10,11,25,26,27
+    // output attributes to aggregates, used before AP Step. attr is attributes, divided by comma, eg 1,10,11,25,26,27
     public static void selectAttributesToAggregate(Path readPath, Path writePath, int size, String attr) throws IOException{
         Configuration conf = new Configuration();
         FileSystem fs = FileSystem.get(conf);
@@ -197,7 +200,7 @@ public class SequenceFilesUtils {
         }   
     }
    
-    // used in removeDuplicateAPPResult
+    // convert a string to List<Integer>
     public static List<Integer> convertToList(String v) {
 
         List<Integer> myList = new ArrayList<Integer>();
@@ -212,7 +215,7 @@ public class SequenceFilesUtils {
         }
         return myList;        
     }
-    // used in removeDuplicateAPPResult
+    // check if arr1 is in arr2. 
     public static Boolean exists(List<Integer> arr1, List<List<Integer>> arr2)
     {
         Boolean exist=false;
@@ -224,7 +227,7 @@ public class SequenceFilesUtils {
         }
         return exist;
     }
-    // tp examine the result of RAS. 
+    // tp examine the result of RA. 
     public static void check_ras_result() throws IOException{
         Joiner comma = Joiner.on(",").skipNulls(); 
         Configuration conf = new Configuration();
@@ -245,7 +248,7 @@ public class SequenceFilesUtils {
             reader.close();
         }
     }
-    // // remove duplicate in the result of APP. Output a SequenceFile (key=length of a list, value = the list itself) 
+    // remove duplicate in the result of APP. Output a SequenceFile (key=length of a list, value = the list itself) 
     public static void removeDuplicateAPPResult(Path readPath, Path writePath) throws IOException{
         Joiner comma = Joiner.on(",").skipNulls(); 
         Configuration conf = new Configuration();

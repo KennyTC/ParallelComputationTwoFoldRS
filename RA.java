@@ -40,22 +40,19 @@ import org.apache.hadoop.io.ArrayWritable;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Write a description of class RAS here.
- *
- * @author (your name)
- * @version (a version number or a date)
+ * Aggregate certain and possible equivalence class in parallel.
  */
-public class RAS
+public class RA
 {
     public static void main(String [] args) throws Exception
     {
         long startTime = System.nanoTime();
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, args[2]);
-        job.setJarByClass(RAS.class);
-        job.setMapperClass(MapRAS.class);
-        job.setCombinerClass(CombinerRAS.class);
-        job.setReducerClass(ReduceRAS.class);       
+        job.setJarByClass(RA.class);
+        job.setMapperClass(MapRA.class);
+        job.setCombinerClass(CombinerRA.class);
+        job.setReducerClass(ReduceRA.class);       
         job.setNumReduceTasks(Integer.parseInt(args[3]));
 
         //input
@@ -103,20 +100,7 @@ public class RAS
                         myList.add(Integer.parseInt(st.nextToken()));
                     }
                     temp.add(myList); 
-                }
-                // if(key.toString().equals("1")){
-                // List<Integer> myList = new ArrayList<Integer>();
-                // myList.add(Integer.parseInt(value.toString()));                    
-                // temp.add(myList); 
-                // }
-                // else{
-                // StringTokenizer st = new StringTokenizer(value.toString(), ",");                  
-                // List<Integer> myList = new ArrayList<Integer>();
-                // while(st.hasMoreTokens()){
-                // myList.add(Integer.parseInt(st.nextToken()));
-                // }
-                // temp.add(myList); 
-                // }
+                }          
             }
         } finally {
             IOUtils.closeStream(reader);
@@ -124,7 +108,7 @@ public class RAS
         return temp;
     }
 
-    // return True if arr1 contains arr2. Both arr1 and arr2 are sorted. 
+    // return True if arr1 contains arr2, False otherwise. Both arr1 and arr2 are sorted. 
     public static Boolean contain(List<Integer> arr1, List<Integer> arr2) {
         if (arr1.size() < arr2.size()) return false;
         for (int v: arr2){
@@ -134,7 +118,7 @@ public class RAS
         }
         return true;            
     }
-    // return intersection of arr1 and arr2. Both arr1 and arr2 are sorted.  
+    // find intersection between two List<Integer>. Both arr1 and arr2 are sorted.  
     public static List<Integer> intersection(List<Integer> arr1, List<Integer> arr2)
     {
         List<Integer> tmp = new ArrayList<Integer>();
@@ -157,7 +141,7 @@ public class RAS
         return tmp;
     }    
 
-    // used in removeDuplicateAPPResult
+    // convert a string to List<Integer>
     public static List<Integer> convertToList(String v) {
 
         List<Integer> myList = new ArrayList<Integer>();
@@ -172,7 +156,7 @@ public class RAS
         }
         return myList;        
     }
-
+    // check arr1 to see if it is arr2. Return true if arr1 is in arr2.
     public static Boolean exists(List<Integer> arr1, List<List<Integer>> arr2)
     {
         Boolean exist=false;
@@ -185,7 +169,7 @@ public class RAS
         return exist;
     }
 
-    public static class MapRAS extends Mapper<LongWritable, Text, Text, Text>{
+    public static class MapRA extends Mapper<LongWritable, Text, Text, Text>{
         public static List<List<Integer>> minA = new ArrayList<List<Integer>>();
         public static List<List<Integer>> maxA = new ArrayList<List<Integer>>();
         public Text CL = new Text();
@@ -197,8 +181,8 @@ public class RAS
         protected void setup(Context context) throws IOException, InterruptedException {
 
             System.out.println("start setup");            
-            minA=readSequenceFile("/output/100/8attr/app_min/part-r-00000");
-            maxA=readSequenceFile("/output/100/8attr/app_max/part-r-00000");            
+            minA=readSequenceFile("/output/100/8attr/app_min/part-r-00000"); // load Certian equivalence classes on A
+            maxA=readSequenceFile("/output/100/8attr/app_max/part-r-00000"); // load possible equivalence classes on A           
             System.out.println("finish setup");
             if (minA.isEmpty())
                 System.out.println("minA empty");
@@ -269,7 +253,8 @@ public class RAS
             System.out.println("finish map");
         }
     }
-    public static class ReduceRAS extends Reducer<Text, Text, Text, Text>
+    
+    public static class ReduceRA extends Reducer<Text, Text, Text, Text>
     {
         public void reduce(Text key, Iterable<Text> values, Context con) throws IOException, InterruptedException
         {
@@ -301,7 +286,7 @@ public class RAS
 
         }
     }
-    public static class CombinerRAS extends Reducer<Text, Text, Text, Text>
+    public static class CombinerRA extends Reducer<Text, Text, Text, Text>
     {
         public void reduce(Text key, Iterable<Text> values, Context con) throws IOException, InterruptedException
         {
@@ -323,128 +308,5 @@ public class RAS
             }
             System.out.println("finish combiner");
         }
-    }    
-
-    // public static class ArrayListWritable<E extends Writable> extends ArrayList<E> implements Writable {
-    // private static final long serialVersionUID = 4911321393319821791L;
-
-    // /**
-    // * Creates an ArrayListWritable object.
-    // */
-    // public ArrayListWritable() {
-    // super();
-    // }
-
-    // /**
-    // * Creates an ArrayListWritable object from an ArrayList.
-    // */
-    // public ArrayListWritable(ArrayList<E> array) {
-    // super(array);
-    // }
-
-    // /**
-    // * Deserializes the array.
-    // *
-    // * @param in source for raw byte representation
-    // */
-    // @SuppressWarnings("unchecked")
-    // public void readFields(DataInput in) throws IOException {
-    // this.clear();
-
-    // int numFields = in.readInt();
-    // if (numFields == 0)
-    // return;
-    // String className = in.readUTF();
-    // E obj;
-    // try {
-    // Class<E> c = (Class<E>) Class.forName(className);
-    // for (int i = 0; i < numFields; i++) {
-    // obj = (E) c.newInstance();
-    // obj.readFields(in);
-    // this.add(obj);
-    // }
-
-    // } catch (Exception e) {
-    // e.printStackTrace();
-    // }
-    // }
-
-    // /**
-    // * Serializes this array.
-    // *
-    // * @param out where to write the raw byte representation
-    // */
-    // public void write(DataOutput out) throws IOException {
-    // out.writeInt(this.size());
-    // if (size() == 0)
-    // return;
-    // E obj = get(0);
-
-    // out.writeUTF(obj.getClass().getCanonicalName());
-
-    // for (int i = 0; i < size(); i++) {
-    // obj = get(i);
-    // if (obj == null) {
-    // throw new IOException("Cannot serialize null fields!");
-    // }
-    // obj.write(out);
-    // }
-    // }
-
-    // /**
-    // * Generates human-readable String representation of this ArrayList.
-    // *
-    // * @return human-readable String representation of this ArrayList
-    // */
-    // public String toString() {
-    // StringBuffer sb = new StringBuffer();
-    // sb.append("[");
-    // for (int i = 0; i < this.size(); i++) {
-    // if (i != 0)
-    // sb.append(", ");
-    // sb.append(this.get(i));
-    // }
-    // sb.append("]");
-
-    // return sb.toString();
-    // }
-    // }
-    // public static class IntArrayWritable extends ArrayWritable { 
-
-    // public IntArrayWritable() { 
-    // super(IntWritable.class); 
-    // } 
-    // // public IntArrayWritable(Class<? extends Writable> valueClass) {
-    // // super(valueClass);
-    // // }
-    // // public IntArrayWritable(Class<? extends Writable> valueClass, Writable[] values) {
-    // // super(valueClass, values);
-    // // }
-    // // public IntArrayWritable(IntWritable[] iw) { 
-    // // this(); 
-    // // set(iw); 
-    // // } 
-
-    // @Override 
-    // public String toString() { 
-    // StringBuilder sb = new StringBuilder(); 
-    // for (String s : super.toStrings()) { 
-    // sb.append(s).append(" "); 
-    // } 
-    // return sb.toString(); 
-    // } 
-    // }
-    // public class TwoDIntArrayWritables extends TwoDArrayWritable
-    // {
-    // public TwoDIntArrayWritables() {
-    // super(IntWritable.class);
-
-    // }
-
-    // public TwoDIntArrayWritables(Class valueClass) {
-    // super(valueClass);
-    // // TODO Auto-generated constructor stub
-    // }
-    // }
-
+    }
 }
